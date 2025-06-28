@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 
 	<meta http-equiv="Content-Security-Policy"
-		content="default-src 'none'; script-src 'sha256-nlLyDpnjtftJG2xvXh2vuy77l7xFTjfOz7Jnj1iXNmA=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
+		content="default-src 'none'; script-src 'sha256-LBHcyjWYTM+idxfwCbknag8t5coV/WCM+B/PBdvOmfA=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
 
 
 	<!-- Disable pinch zooming -->
@@ -35,7 +35,7 @@
 		const webviewOrigin = searchParams.get('origin');
 		const onElectron = searchParams.get('platform') === 'electron';
 		const disableServiceWorker = searchParams.has('disableServiceWorker');
-		const expectedWorkerVersion = parseInt(searchParams.get('swVersion'));
+		const expectedWorkerVersion = parseInt(searchParams.get('swVersion') || '0');
 
 		/**
 		 * Use polling to track focus of main webview and iframes within the webview
@@ -346,6 +346,9 @@
 				};
 
 				const parentOrigin = searchParams.get('parentOrigin');
+				if (!parentOrigin) {
+					throw new Error('Missing parentOrigin parameter');
+				}
 
 				const hostname = location.hostname;
 
@@ -835,8 +838,16 @@
 
 		function areServiceWorkersEnabled() {
 			try {
-				return !!navigator.serviceWorker;
+				// Check if Service Workers are available and not blocked by sandbox restrictions
+				if (!navigator.serviceWorker) {
+					return false;
+				}
+				// Try to access serviceWorker property to ensure it's not blocked by sandboxing
+				navigator.serviceWorker.toString();
+				return true;
 			} catch (e) {
+				// Handle SecurityError: Failed to read the 'serviceWorker' property from 'Navigator'
+				console.warn('Service Workers are disabled due to sandbox restrictions:', e.message);
 				return false;
 			}
 		}
@@ -1038,7 +1049,7 @@
 				// seeing the service worker applying properly.
 				// Fake load an empty on the correct origin and then write real html
 				// into it to get around this.
-				const fakeUrlParams = new URLSearchParams({ id: ID });
+				const fakeUrlParams = new URLSearchParams({ id: ID || '' });
 				if (globalThis.crossOriginIsolated) {
 					fakeUrlParams.set('vscode-coi', '3'); /*COOP+COEP*/
 				}
@@ -1047,8 +1058,10 @@
 				newFrame.style.cssText = 'display: block; margin: 0; overflow: hidden; position: absolute; width: 100%; height: 100%; visibility: hidden';
 				document.body.appendChild(newFrame);
 
-				newFrame.contentWindow.addEventListener('keydown', handleInnerKeydown);
-				newFrame.contentWindow.addEventListener('keyup', handleInnerKeyup);
+				if (newFrame.contentWindow) {
+					newFrame.contentWindow.addEventListener('keydown', handleInnerKeydown);
+					newFrame.contentWindow.addEventListener('keyup', handleInnerKeyup);
+				}
 
 				/**
 				 * @param {Document} contentDocument
@@ -1168,12 +1181,8 @@
 						let context = {};
 
 						/** @type {HTMLElement | null} */
-						let el = e.target;
-						while (true) {
-							if (!el) {
-								break;
-							}
-
+						let el = e.target instanceof HTMLElement ? e.target : null;
+						while (el) {
 							// Search self/ancestors for the closest context data attribute
 							el = el.closest('[data-vscode-context]');
 							if (!el) {
@@ -1181,7 +1190,9 @@
 							}
 
 							try {
-								context = { ...JSON.parse(el.dataset.vscodeContext), ...context };
+								if (el.dataset.vscodeContext) {
+									context = { ...JSON.parse(el.dataset.vscodeContext), ...context };
+								}
 							} catch (e) {
 								console.error(`Error parsing 'data-vscode-context' as json`, el, e);
 							}

@@ -396,7 +396,15 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 		const element = document.createElement('iframe');
 		element.name = this.id;
 		element.className = `webview ${options.customClasses || ''}`;
+
+		// Add basic sandbox permissions
 		element.sandbox.add('allow-scripts', 'allow-forms', 'allow-pointer-lock', 'allow-downloads');
+
+		// Only add allow-same-origin if Service Worker is not disabled
+		// This is needed for Service Worker to function properly but reduces sandbox security
+		if (!options.disableServiceWorker) {
+			element.sandbox.add('allow-same-origin');
+		}
 
 		const allowRules = ['cross-origin-isolated', 'autoplay'];
 		if (!isFirefox) {
