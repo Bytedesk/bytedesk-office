@@ -202,29 +202,32 @@ class EditCodeService extends Disposable implements IEditCodeService {
 		// this function initializes data structures and listens for changes
 		const registeredModelURIs = new Set<string>()
 		const initializeModel = async (model: ITextModel) => {
+			try {
+				await this._voidModelService.initializeModel(model.uri)
 
-			await this._voidModelService.initializeModel(model.uri)
+				// do not add listeners to the same model twice - important, or will see duplicates
+				if (registeredModelURIs.has(model.uri.fsPath)) return
+				registeredModelURIs.add(model.uri.fsPath)
 
-			// do not add listeners to the same model twice - important, or will see duplicates
-			if (registeredModelURIs.has(model.uri.fsPath)) return
-			registeredModelURIs.add(model.uri.fsPath)
+				if (!(model.uri.fsPath in this.diffAreasOfURI)) {
+					this.diffAreasOfURI[model.uri.fsPath] = new Set();
+				}
 
-			if (!(model.uri.fsPath in this.diffAreasOfURI)) {
-				this.diffAreasOfURI[model.uri.fsPath] = new Set();
+				// when the user types, realign diff areas and re-render them
+				this._register(
+					model.onDidChangeContent(e => {
+						// it's as if we just called _write, now all we need to do is realign and refresh
+						if (this.weAreWriting) return
+						const uri = model.uri
+						this._onUserChangeContent(uri, e)
+					})
+				)
+
+				// when the model first mounts, refresh any diffs that might be on it (happens if diffs were added in the BG)
+				this._refreshStylesAndDiffsInURI(model.uri)
+			} catch (error) {
+				console.warn('Failed to initialize model:', model.uri.toString(), error);
 			}
-
-			// when the user types, realign diff areas and re-render them
-			this._register(
-				model.onDidChangeContent(e => {
-					// it's as if we just called _write, now all we need to do is realign and refresh
-					if (this.weAreWriting) return
-					const uri = model.uri
-					this._onUserChangeContent(uri, e)
-				})
-			)
-
-			// when the model first mounts, refresh any diffs that might be on it (happens if diffs were added in the BG)
-			this._refreshStylesAndDiffsInURI(model.uri)
 		}
 		// initialize all existing models + initialize when a new model mounts
 		for (let model of this._modelService.getModels()) { initializeModel(model) }

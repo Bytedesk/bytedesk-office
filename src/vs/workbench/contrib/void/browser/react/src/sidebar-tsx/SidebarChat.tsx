@@ -97,7 +97,6 @@ const IconSquare = ({ size, className = '' }: { size: number, className?: string
 	);
 };
 
-
 export const IconWarning = ({ size, className = '' }: { size: number, className?: string }) => {
 	return (
 		<svg

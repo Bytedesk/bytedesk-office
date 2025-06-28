@@ -5,6 +5,7 @@ import { IResolvedTextEditorModel, ITextModelService } from '../../../../editor/
 import { registerSingleton, InstantiationType } from '../../../../platform/instantiation/common/extensions.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { ITextFileService } from '../../../services/textfile/common/textfiles.js';
+import { IModelService } from '../../../../editor/common/services/model.js';
 
 type VoidModelType = {
 	model: ITextModel | null;
@@ -31,8 +32,14 @@ class VoidModelService extends Disposable implements IVoidModelService {
 	constructor(
 		@ITextModelService private readonly _textModelService: ITextModelService,
 		@ITextFileService private readonly _textFileService: ITextFileService,
+		@IModelService private readonly _modelService: IModelService,
 	) {
 		super();
+
+		// Listen for model removal to clean up references
+		this._register(this._modelService.onModelRemoved((model: ITextModel) => {
+			this.cleanupModel(model.uri);
+		}));
 	}
 
 	saveModel = async (uri: URI) => {
@@ -44,6 +51,13 @@ class VoidModelService extends Disposable implements IVoidModelService {
 	initializeModel = async (uri: URI) => {
 		try {
 			if (uri.fsPath in this._modelRefOfURI) return;
+
+			// Check if it's a valid file URI that can be resolved
+			if (uri.scheme !== 'file' && uri.scheme !== 'untitled' && uri.scheme !== 'vscode-userdata') {
+				console.warn('InitializeModel: Unsupported URI scheme', uri.toString());
+				return;
+			}
+
 			const editorModelRef = await this._textModelService.createModelReference(uri);
 			// Keep a strong reference to prevent disposal
 			this._modelRefOfURI[uri.fsPath] = editorModelRef;
@@ -79,11 +93,36 @@ class VoidModelService extends Disposable implements IVoidModelService {
 
 	};
 
+	// Add a method to clean up specific model references
+	cleanupModel = (uri: URI) => {
+		const ref = this._modelRefOfURI[uri.fsPath];
+		if (ref) {
+			try {
+				ref.dispose();
+				delete this._modelRefOfURI[uri.fsPath];
+			} catch (e) {
+				console.warn('Error disposing model reference for', uri.fsPath, e);
+			}
+		}
+	};
+
+	// Add a method to clean up all model references
+	cleanupAllModels = () => {
+		for (const [fsPath, ref] of Object.entries(this._modelRefOfURI)) {
+			try {
+				ref.dispose();
+			} catch (e) {
+				console.warn('Error disposing model reference for', fsPath, e);
+			}
+		}
+		// Clear the reference map
+		Object.keys(this._modelRefOfURI).forEach(key => delete this._modelRefOfURI[key]);
+	};
+
 	override dispose() {
 		super.dispose();
-		for (const ref of Object.values(this._modelRefOfURI)) {
-			ref.dispose(); // release reference to allow disposal
-		}
+		// Use the cleanup method for proper resource management
+		this.cleanupAllModels();
 	}
 }
 

@@ -396,7 +396,7 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 		const element = document.createElement('iframe');
 		element.name = this.id;
 		element.className = `webview ${options.customClasses || ''}`;
-		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads');
+		element.sandbox.add('allow-scripts', 'allow-forms', 'allow-pointer-lock', 'allow-downloads');
 
 		const allowRules = ['cross-origin-isolated', 'autoplay'];
 		if (!isFirefox) {
