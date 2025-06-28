@@ -2,12 +2,6 @@
 
 支持通过对话的方式实现 docx/excel/ppt 等文件的编辑。
 
-这是微语-AI编辑器的官方贡献指南。我们希望让贡献过程尽可能简单，如果您有任何问题或建议，请随时通过邮件或Discord联系我们！
-
-贡献方式：
-
-- 🪴 创建新的Issues - 查看[Issues](https://github.com/Bytedesk/bytedesk-editor/issues)。
-
 ## 代码库指南
 
 如果您想要添加新功能，我们[强烈推荐阅读](https://github.com/Bytedesk/bytedesk-editor-private/blob/main/VOID_CODEBASE_GUIDE.md)这个关于微语源代码的指南。
