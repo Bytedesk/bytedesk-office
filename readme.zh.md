@@ -12,11 +12,11 @@
 
 - 💫 完成[路线图](https://github.com/orgs/voideditor/projects/2)中的项目。
 - 💡 在我们的[Discord](https://discord.gg/RSNjgaugJs)中提出建议。
-- 🪴 创建新的Issues - 查看[Issues](https://github.com/voideditor/void/issues)。
+- 🪴 创建新的Issues - 查看[Issues](https://github.com/Bytedesk/bytedesk-editor/issues)。
 
 ### 代码库指南
 
-如果您想要添加新功能，我们[强烈推荐阅读](https://github.com/voideditor/void/blob/main/VOID_CODEBASE_GUIDE.md)这个关于微语源代码的指南。
+如果您想要添加新功能，我们[强烈推荐阅读](https://github.com/Bytedesk/bytedesk-editor-private/blob/main/VOID_CODEBASE_GUIDE.md)这个关于微语源代码的指南。
 
 如果您阅读了这个指南，这个代码库并不像最初看起来那么复杂！
 
@@ -55,7 +55,7 @@
 
 ### d. 在VSCode内构建微语
 
-1. `git clone https://github.com/voideditor/void` 克隆代码库。
+1. `git clone https://github.com/Bytedesk/bytedesk-editor` 克隆代码库。
 2. `npm install` 安装所有依赖项。
 3. 要构建微语，打开VSCode。然后：
    - Windows：按 `Ctrl+Shift+B`。
@@ -96,27 +96,31 @@
 - 如果您在运行./scripts/code.sh时遇到类似 `npm error libtool: error: unrecognised option: '-static'` 的错误，确保您有GNU libtool而不是BSD libtool（BSD是macOS的默认值）
 - 如果您在运行./scripts/code.sh时遇到类似 `The SUID sandbox helper binary was found, but is not configured correctly` 的错误，运行
 `sudo chown root:root .build/electron/chrome-sandbox && sudo chmod 4755 .build/electron/chrome-sandbox`，然后再次运行 `./scripts/code.sh`。
-- 如果您有任何其他问题，请随时[提交问题](https://github.com/voideditor/void/issues/new)。您也可以参考VSCode的完整[如何贡献](https://github.com/microsoft/vscode/wiki/How-to-Contribute)页面。
+- 如果您有任何其他问题，请随时[提交问题](https://github.com/Bytedesk/bytedesk-editor/issues/new)。您也可以参考VSCode的完整[如何贡献](https://github.com/microsoft/vscode/wiki/How-to-Contribute)页面。
 
 ## 打包
 
 我们通常不推荐打包。相反，您应该只是构建。如果您确定要将微语打包成可执行应用程序，请确保您首先构建，然后运行以下命令之一。这将在void/代码库外部创建一个名为 `VSCode-darwin-arm64` 或类似的文件夹（见下文）。请耐心等待 - 打包可能需要约25分钟。
 
 ### Mac
+
 - `npm run gulp vscode-darwin-arm64` - 最常见（Apple Silicon）
 - `npm run gulp vscode-darwin-x64`（Intel）
 
 ### Windows
+
 - `npm run gulp vscode-win32-x64` - 最常见
 - `npm run gulp vscode-win32-arm64`
 
 ### Linux
+
 - `npm run gulp vscode-linux-x64` - 最常见
 - `npm run gulp vscode-linux-arm64`
 
 ### 输出
 
 这将在 `void/` 外部生成一个文件夹：
+
 ```bash
 workspace/
 ├── void/   # 您的微语分支
@@ -124,7 +128,8 @@ workspace/
 ```
 
 ### 分发
-微语的维护者在我们的网站和发布中分发微语。我们的构建管道是VSCodium的分支，它通过运行GitHub Actions来创建下载文件。带有更多说明的构建代码库位于[这里](https://github.com/voideditor/void-builder)。
+
+微语的维护者在我们的网站和发布中分发微语。我们的构建管道是VSCodium的分支，它通过运行GitHub Actions来创建下载文件。带有更多说明的构建代码库位于[这里](https://github.com/Bytedesk/bytedesk-editor-builder)。
 
 ## Pull Request指南
 
@@ -134,11 +139,11 @@ workspace/
 
 ## 许可证
 
-Business Source License 1.1: https://github.com/Bytedesk/bytedesk/blob/main/LICENSE
+Business Source License 1.1: <https://github.com/Bytedesk/bytedesk/blob/main/LICENSE>
 
 仅支持企业内部员工自用，严禁私自用于销售、二次销售或者部署SaaS方式销售。
 
 ## 联系方式
 
-- 技术/商务联系：270580156@qq.com
+- 技术/商务联系：<270580156@qq.com>
 - 官网：bytedesk.com
